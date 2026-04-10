@@ -177,7 +177,7 @@ const DATE_HEADER_BG  = "#d4e4f5";
 const SUBHEADER_BG    = "#e4dff5";
 const HOTEL_COL_BG    = "#ece8f8";
 const BORDER_THIN     = "#dde1e2";
-const BORDER_THICK    = "#9eafc4";   // darker, heavier divider
+const BORDER_THICK    = "#8899ae";   // section divider
 const COL_WIDTH       = "120px";     // equal width for Current + Recommended
 const PRIMARY_TEXT    = "#1a2533";
 const CELL_TEXT       = "#1a2533";
@@ -292,8 +292,8 @@ export default function RatesTable() {
               return (
                 <Fragment key={day}>
                   <th
-                    className="text-right px-4 py-1 font-normal border-b border-r text-[12px]"
-                    style={{ backgroundColor: SUBHEADER_BG, borderColor: BORDER_THIN, color: SUBHEADER_TEXT, width: COL_WIDTH }}
+                    className="text-right px-4 py-1 font-normal border-b text-[12px]"
+                    style={{ backgroundColor: SUBHEADER_BG, borderRight: `1px solid ${BORDER_THIN}`, color: SUBHEADER_TEXT, width: COL_WIDTH }}
                   >
                     Current
                   </th>
@@ -305,10 +305,10 @@ export default function RatesTable() {
                   </th>
                   {expanded && (
                     <>
-                      <th className="text-right px-4 py-1 font-normal border-b border-r text-[12px]" style={{ backgroundColor: SUBHEADER_BG, borderColor: BORDER_THIN, color: SUBHEADER_TEXT, width: "110px" }}>
+                      <th className="text-right px-4 py-1 font-normal border-b text-[12px]" style={{ backgroundColor: SUBHEADER_BG, borderRight: `1px solid ${BORDER_THIN}`, color: SUBHEADER_TEXT, width: "110px" }}>
                         Committed Occupancy
                       </th>
-                      <th className="text-right px-4 py-1 font-normal border-b border-r text-[12px]" style={{ backgroundColor: SUBHEADER_BG, borderColor: BORDER_THIN, color: SUBHEADER_TEXT, width: "110px" }}>
+                      <th className="text-right px-4 py-1 font-normal border-b text-[12px]" style={{ backgroundColor: SUBHEADER_BG, borderRight: `1px solid ${BORDER_THIN}`, color: SUBHEADER_TEXT, width: "110px" }}>
                         Demand Occupancy
                       </th>
                       <th className="text-right px-4 py-1 font-normal border-b text-[12px]" style={{ backgroundColor: SUBHEADER_BG, color: SUBHEADER_TEXT, width: "110px", ...lastColBorder }}>
@@ -358,8 +358,8 @@ export default function RatesTable() {
                   const lastColBorder = isLast ? { borderRight: `1px solid ${BORDER_THIN}` } : thickBorder();
                   return (
                     <Fragment key={i}>
-                      {/* Current */}
-                      <td className="px-3 py-2 border-b border-r" style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: COL_WIDTH }}>
+                      {/* Current — no right border; section divider lives on Recommended */}
+                      <td className="px-3 py-2 border-b" style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: COL_WIDTH }}>
                         <span className="flex items-center gap-1.5">
                           <span className="w-4 shrink-0 flex justify-center">
                             {rate.currentIcon === "lock" ? <LockedIcon /> : <UnlockedIcon />}
@@ -385,10 +385,10 @@ export default function RatesTable() {
                       {/* Expanded columns */}
                       {expanded && (
                         <>
-                          <td className="px-3 py-2 border-b border-r text-right" style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: "110px" }}>
+                          <td className="px-3 py-2 border-b text-right" style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: "110px" }}>
                             {rate.committedOccupancy}
                           </td>
-                          <td className="px-3 py-2 border-b border-r text-right" style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: "110px" }}>
+                          <td className="px-3 py-2 border-b text-right" style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: "110px" }}>
                             {rate.demandOccupancy}
                           </td>
                           <td className="px-3 py-2 border-b text-right" style={{ color: CELL_TEXT, width: "110px", borderBottom: `1px solid ${BORDER_THIN}`, ...lastColBorder }}>
