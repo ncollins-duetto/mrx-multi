@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "mrx-multi",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/bin/sh",
+      "runtimeArgs": ["-c", "cd /Users/nylecollins/dev/experiments/mrx-multi && env -u NODE_OPTIONS node_modules/.bin/next dev --disable-source-maps"],
       "port": 3000
     }
   ]
