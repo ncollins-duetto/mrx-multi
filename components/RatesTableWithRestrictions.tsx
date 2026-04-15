@@ -303,7 +303,7 @@ const DATE_HEADER_BG  = "#d4e4f5";
 const SUBHEADER_BG    = "#e4dff5";
 const HOTEL_COL_BG    = "#ece8f8";
 const BORDER_THIN     = "#dde1e2";
-const BORDER_THICK    = "#8899ae";
+const BORDER_THICK    = "#dde1e2";
 const RATE_COL_WIDTH     = "175px";
 const OVERRIDE_COL_WIDTH = "120px";
 const RESTR_COL_WIDTH    = "100px";
@@ -315,8 +315,8 @@ const DATE_HEADER_TEXT = "#1e3a5f";
 
 function thickBorder(side: "right" | "left" = "right") {
   return side === "right"
-    ? { borderRight: `3px solid ${BORDER_THICK}` }
-    : { borderLeft: `3px solid ${BORDER_THICK}` };
+    ? { borderRight: `2px solid ${BORDER_THICK}` }
+    : { borderLeft: `2px solid ${BORDER_THICK}` };
 }
 
 // ── Icons ─────────────────────────────────────────────────────────────────────

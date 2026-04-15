@@ -177,7 +177,7 @@ const DATE_HEADER_BG  = "#d4e4f5";
 const SUBHEADER_BG    = "#e4dff5";
 const HOTEL_COL_BG    = "#ece8f8";
 const BORDER_THIN     = "#dde1e2";
-const BORDER_THICK    = "#8899ae";   // section divider
+const BORDER_THICK    = "#dde1e2";   // section divider
 const COL_WIDTH       = "120px";     // equal width for Current + Recommended
 const PRIMARY_TEXT    = "#1a2533";
 const CELL_TEXT       = "#1a2533";
@@ -229,8 +229,8 @@ function ChevronIcon({ left = false }: { left?: boolean }) {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function thickBorder(side: "right" | "left" = "right") {
   return side === "right"
-    ? { borderRight: `3px solid ${BORDER_THICK}` }
-    : { borderLeft: `3px solid ${BORDER_THICK}` };
+    ? { borderRight: `2px solid ${BORDER_THICK}` }
+    : { borderLeft: `2px solid ${BORDER_THICK}` };
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────

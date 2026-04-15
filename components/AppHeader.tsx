@@ -23,9 +23,9 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const VERSIONS = [
-  { label: "V1 — The Brief", path: "/v1" },
-  { label: "V2 — IA Correct", path: "/v2" },
-  { label: "V3 — Megamenu", path: "/v3" },
+  { label: "Current MRX", path: "/" },
+  { label: "P&S Rates with restrictions", path: "/v1" },
+  { label: "MP Rates & Restrictions", path: "/v3" },
 ];
 
 function ChevronDownIcon() {
