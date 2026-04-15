@@ -5,12 +5,19 @@ import { HOTEL_NAMES } from "@/lib/restrictionData";
 
 const MAX_HOTELS = 10;
 
+const EXPANDED_COLS = [
+  { key: "committedOcc",  label: "Committed Occupancy" },
+  { key: "demandOcc",     label: "Demand Occupancy" },
+  { key: "competitorAvg", label: "Competitor Average" },
+];
+
 type Props = {
   open: boolean;
   onClose: () => void;
-  onApply: (showRestrictions: boolean, visibleHotels: string[]) => void;
+  onApply: (showRestrictions: boolean, visibleHotels: string[], visibleColumns: string[]) => void;
   initialShowRestrictions: boolean;
   initialVisibleHotels: string[];
+  initialVisibleColumns: string[];
 };
 
 export default function TableSettingsModal({
@@ -19,12 +26,14 @@ export default function TableSettingsModal({
   onApply,
   initialShowRestrictions,
   initialVisibleHotels,
+  initialVisibleColumns,
 }: Props) {
-  const [pickupDays, setPickupDays] = useState({ first: 3, second: 7, third: 14 });
-  const [showMultiCurrency, setShowMultiCurrency] = useState(false);
   const [showRestrictions, setShowRestrictions] = useState(initialShowRestrictions);
   const [visibleHotels, setVisibleHotels] = useState<Set<string>>(
     new Set(initialVisibleHotels)
+  );
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
+    new Set(initialVisibleColumns)
   );
   const [hotelSearch, setHotelSearch] = useState("");
 
@@ -47,8 +56,16 @@ export default function TableSettingsModal({
     });
   }
 
+  function toggleColumn(key: string) {
+    setVisibleColumns((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  }
+
   function handleSave() {
-    onApply(showRestrictions, Array.from(visibleHotels));
+    onApply(showRestrictions, Array.from(visibleHotels), Array.from(visibleColumns));
   }
 
   return (
@@ -81,38 +98,8 @@ export default function TableSettingsModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
-          {/* Pickup days */}
+          {/* Show restrictions toggle */}
           <div className="px-6 py-4">
-            <div className="text-[13px] font-semibold mb-3" style={{ color: "#1a2533" }}>
-              Customize pickup days
-            </div>
-            <div className="flex items-center gap-3">
-              {(["first", "second", "third"] as const).map((key) => (
-                <input
-                  key={key}
-                  type="number"
-                  min={0}
-                  value={pickupDays[key]}
-                  onChange={(e) =>
-                    setPickupDays((p) => ({ ...p, [key]: parseInt(e.target.value) || 0 }))
-                  }
-                  className="border rounded text-center text-[13px]"
-                  style={{ width: "60px", height: "36px", borderColor: "#dde1e2", color: "#1a2533" }}
-                />
-              ))}
-              <span className="text-[13px]" style={{ color: "#4f5b60" }}>days</span>
-            </div>
-          </div>
-
-          <div className="border-t" style={{ borderColor: "#dde1e2" }} />
-
-          {/* Toggles */}
-          <div className="px-6 py-4 space-y-3">
-            <Toggle
-              label="Show multi-currency"
-              checked={showMultiCurrency}
-              onChange={setShowMultiCurrency}
-            />
             <Toggle
               label="Show restrictions column"
               checked={showRestrictions}
@@ -122,7 +109,41 @@ export default function TableSettingsModal({
 
           <div className="border-t" style={{ borderColor: "#dde1e2" }} />
 
-          {/* Hotels */}
+          {/* Metric columns */}
+          <div className="px-6 py-4">
+            <div className="text-[13px] font-semibold mb-3" style={{ color: "#1a2533" }}>
+              Metric columns
+            </div>
+            <div
+              className="border rounded overflow-hidden"
+              style={{ borderColor: "#dde1e2" }}
+            >
+              {EXPANDED_COLS.map((col) => {
+                const checked = visibleColumns.has(col.key);
+                return (
+                  <label
+                    key={col.key}
+                    className="flex items-center gap-2.5 px-3 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
+                    style={{ borderColor: "#dde1e2" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleColumn(col.key)}
+                      style={{ accentColor: "#006461" }}
+                    />
+                    <span className="text-[13px]" style={{ color: "#1a2533" }}>
+                      {col.label}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t" style={{ borderColor: "#dde1e2" }} />
+
+          {/* Properties displayed */}
           <div className="px-6 py-4">
             <div className="flex items-center justify-between mb-3">
               <div className="text-[13px] font-semibold" style={{ color: "#1a2533" }}>

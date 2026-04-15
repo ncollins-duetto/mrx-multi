@@ -4,13 +4,13 @@ import { useState } from "react";
 import V3Header from "@/components/V3Header";
 import RatesTableWithRestrictions from "@/components/RatesTableWithRestrictions";
 import ApplyRestrictionModal from "@/components/restrictions/ApplyRestrictionModal";
-import TableSettingsModal from "@/components/restrictions/TableSettingsModal";
 import { DayRestriction, HOTEL_NAMES, HOTEL_RESTRICTIONS, RestrictionType } from "@/lib/restrictionData";
 
 const SEED_MAP = new Map(HOTEL_RESTRICTIONS.map((h) => [h.hotelId, h.restrictions]));
 
-// Static group/hotel selector data
 const GROUPS = ["Europe", "Americas", "Asia Pacific"];
+
+// ── Icons ────────────────────────────────────────────────────────────────────
 
 function CalendarIcon() {
   return (
@@ -19,17 +19,27 @@ function CalendarIcon() {
     </svg>
   );
 }
-function EyeIcon() {
+
+function BulkIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#4f5b60">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
     </svg>
   );
 }
-function TableSettingsIcon() {
+
+function ChevronDown() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M7 10l5 5 5-5H7z" />
+    </svg>
+  );
+}
+
+// Table+cog icon for the drawer header
+function DrawerTableSettingsIcon() {
   return (
     <div style={{ position: "relative", width: 16, height: 16, flexShrink: 0 }}>
-      {/* TableChart icon clipped to L-shape, clearing space for cog in bottom-right */}
       <svg
         width="16" height="16" viewBox="0 0 24 24" fill="#4f5b60"
         style={{
@@ -39,7 +49,6 @@ function TableSettingsIcon() {
       >
         <path d="M10 10.02h5V21h-5zM17 21h3c1.1 0 2-.9 2-2v-9h-5v11zm3-18H5c-1.1 0-2 .9-2 2v3h19V5c0-1.1-.9-2-2-2zM3 19c0 1.1.9 2 2 2h3V10H3v9z" />
       </svg>
-      {/* Settings cog overlay in bottom-right */}
       <svg
         width="9" height="9" viewBox="0 0 24 24" fill="#4f5b60"
         style={{ position: "absolute", bottom: 0, right: 0 }}
@@ -49,18 +58,119 @@ function TableSettingsIcon() {
     </div>
   );
 }
-function BulkIcon() {
+
+// ── Column drawer ─────────────────────────────────────────────────────────────
+
+const DRAWER_COLS = [
+  { key: "committedOcc",  label: "Committed Occupancy" },
+  { key: "demandOcc",     label: "Demand Occupancy" },
+  { key: "competitorAvg", label: "Competitor Average" },
+];
+
+function ColumnDrawer({
+  open,
+  onToggle,
+  visibleColumns,
+  onChange,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  visibleColumns: string[];
+  onChange: (cols: string[]) => void;
+}) {
+  function toggleCol(key: string) {
+    onChange(
+      visibleColumns.includes(key)
+        ? visibleColumns.filter((k) => k !== key)
+        : [...visibleColumns, key]
+    );
+  }
+
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="#4f5b60">
-      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-    </svg>
-  );
-}
-function ChevronDown() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M7 10l5 5 5-5H7z" />
-    </svg>
+    <div
+      className="flex-shrink-0 flex flex-col border-l overflow-hidden"
+      style={{
+        width: open ? "240px" : "40px",
+        transition: "width 200ms ease",
+        borderColor: "#dde1e2",
+        backgroundColor: "#ffffff",
+      }}
+    >
+      {/* Toggle strip / header */}
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2.5 flex-shrink-0 hover:bg-gray-50 transition-colors border-b"
+        style={{ height: "40px", padding: "0 12px", minWidth: 0, width: "100%", borderColor: "#dde1e2" }}
+        title={open ? "Close column settings" : "Column settings"}
+      >
+        <DrawerTableSettingsIcon />
+        <span
+          className="text-[13px] font-medium whitespace-nowrap overflow-hidden flex-1 text-left"
+          style={{ opacity: open ? 1 : 0, transition: "opacity 100ms ease", color: "#1a2533" }}
+        >
+          Columns
+        </span>
+        {/* Chevron rotates to indicate open/close */}
+        <svg
+          width="14" height="14" viewBox="0 0 24 24" fill="#4f5b60"
+          style={{
+            flexShrink: 0,
+            opacity: open ? 1 : 0,
+            transition: "opacity 100ms ease, transform 200ms ease",
+            transform: open ? "rotate(0deg)" : "rotate(180deg)",
+          }}
+        >
+          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6z" />
+        </svg>
+      </button>
+
+      {/* Content — white panel */}
+      <div
+        className="flex-1 overflow-y-auto"
+        style={{
+          opacity: open ? 1 : 0,
+          transition: "opacity 150ms ease",
+          pointerEvents: open ? "auto" : "none",
+        }}
+      >
+        {/* Section label */}
+        <div
+          className="px-4 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-wider"
+          style={{ color: "#9aa5ab" }}
+        >
+          Expanded columns
+        </div>
+
+        {/* Checkboxes */}
+        <div className="px-3 pb-4">
+          {DRAWER_COLS.map((col) => {
+            const checked = visibleColumns.includes(col.key);
+            return (
+              <label
+                key={col.key}
+                className="flex items-center gap-2.5 px-1 py-2 cursor-pointer rounded hover:bg-gray-50"
+                style={{ marginLeft: "-4px", marginRight: "-4px" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleCol(col.key)}
+                  style={{ accentColor: "#006461" }}
+                />
+                <span className="text-[13px] whitespace-nowrap" style={{ color: "#1a2533" }}>
+                  {col.label}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+
+        {/* Subtle footer note */}
+        <div className="px-4 pb-4 text-[11px]" style={{ color: "#9aa5ab" }}>
+          Visible when a date column is expanded.
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -221,15 +331,9 @@ function GroupSelector({ selected }: GroupSelectorProps) {
 export default function V3MultiPage() {
   const [dirtyRestrictions, setDirtyRestrictions] = useState<Map<string, DayRestriction>>(new Map());
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const [showRestrictions, setShowRestrictions] = useState(true);
   const [visibleHotels, setVisibleHotels] = useState<string[]>(HOTEL_NAMES.slice(0, 10));
-
-  function handleSettingsApply(nextShowRestrictions: boolean, nextVisibleHotels: string[]) {
-    setShowRestrictions(nextShowRestrictions);
-    setVisibleHotels(nextVisibleHotels);
-    setSettingsModalOpen(false);
-  }
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(["committedOcc", "demandOcc", "competitorAvg"]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   function handleConfirmRestriction(
     hotels: string[],
@@ -242,10 +346,12 @@ export default function V3MultiPage() {
       for (const dayIdx of dayIndices) {
         const key = `${hotelId}:${dayIdx}`;
         if (type === "Clear") {
-          const effective = updates.get(key) ?? SEED_MAP.get(hotelId)?.[dayIdx] ?? { type: "None" };
-          if (effective.type !== "None") {
+          const seed = SEED_MAP.get(hotelId)?.[dayIdx] ?? { type: "None" };
+          if (seed.type !== "None") {
+            // Published restriction exists — mark as pending clear (strikethrough)
             updates.set(key, { type: "None", isDirty: true });
           } else {
+            // No published restriction — discard any unpublished addition silently
             updates.delete(key);
           }
         } else {
@@ -265,17 +371,16 @@ export default function V3MultiPage() {
         activeMenuItem="Manage Rates and Restrictions"
       />
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col overflow-hidden">
         {/* Page header bar */}
         <div
-          className="flex items-center justify-between px-6 py-3 border-b"
+          className="flex items-center justify-between px-6 py-3 border-b flex-shrink-0"
           style={{ borderColor: "#dde1e2" }}
         >
           <div className="flex flex-col gap-2">
             <h1 className="text-[18px] font-bold" style={{ color: "#0e2124" }}>
               Rates &amp; Restrictions
             </h1>
-            {/* Group + hotel selectors */}
             <div className="flex items-center gap-2">
               <GroupSelector selected="Europe" />
               <HotelSelector
@@ -287,12 +392,10 @@ export default function V3MultiPage() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setSettingsModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 h-8 border rounded text-[13px] transition-colors hover:bg-gray-50"
-              style={{ borderColor: "#dde1e2", color: "#4f5b60" }}
+              className="flex items-center gap-1.5 px-4 h-8 rounded text-[13px] font-semibold transition-colors hover:opacity-90"
+              style={{ backgroundColor: "#006461", color: "#ffffff" }}
             >
-              <TableSettingsIcon />
-              Table settings
+              Review &amp; Publish
             </button>
             <button
               onClick={() => setBulkModalOpen(true)}
@@ -303,24 +406,11 @@ export default function V3MultiPage() {
               Bulk restrictions
             </button>
             <button
-              className="flex items-center gap-1.5 px-3 h-8 border rounded text-[13px] transition-colors hover:bg-gray-50"
-              style={{ borderColor: "#dde1e2", color: "#4f5b60" }}
-            >
-              <EyeIcon />
-              Review
-            </button>
-            <button
               className="flex items-center gap-2 px-3 h-8 border rounded text-[13px] transition-colors hover:bg-gray-50"
               style={{ borderColor: "#dde1e2", color: "#4f5b60" }}
             >
               5/7/2026 – 5/13/2026
               <CalendarIcon />
-            </button>
-            <button
-              className="flex items-center gap-1.5 px-4 h-8 rounded text-[13px] font-semibold transition-colors hover:opacity-90"
-              style={{ backgroundColor: "#006461", color: "#ffffff" }}
-            >
-              Publish
             </button>
           </div>
         </div>
@@ -328,7 +418,7 @@ export default function V3MultiPage() {
         {/* Dirty state banner */}
         {dirtyRestrictions.size > 0 && (
           <div
-            className="flex items-center justify-between px-6 py-2 text-[13px]"
+            className="flex items-center justify-between px-6 py-2 text-[13px] flex-shrink-0"
             style={{ backgroundColor: "#e6f4f3", borderBottom: "1px solid #006461" }}
           >
             <span style={{ color: "#065f46" }}>
@@ -344,12 +434,21 @@ export default function V3MultiPage() {
           </div>
         )}
 
-        {/* Table */}
-        <div className="flex-1 p-0">
-          <RatesTableWithRestrictions
-            dirtyRestrictions={dirtyRestrictions}
-            showRestrictions={showRestrictions}
-            visibleHotels={visibleHotels}
+        {/* Table + drawer */}
+        <div className="flex-1 flex flex-row overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <RatesTableWithRestrictions
+              dirtyRestrictions={dirtyRestrictions}
+              showRestrictions={true}
+              visibleHotels={visibleHotels}
+              visibleColumns={visibleColumns}
+            />
+          </div>
+          <ColumnDrawer
+            open={drawerOpen}
+            onToggle={() => setDrawerOpen((v) => !v)}
+            visibleColumns={visibleColumns}
+            onChange={setVisibleColumns}
           />
         </div>
       </main>
@@ -359,13 +458,6 @@ export default function V3MultiPage() {
         onClose={() => setBulkModalOpen(false)}
         onConfirm={handleConfirmRestriction}
         availableHotels={visibleHotels}
-      />
-      <TableSettingsModal
-        open={settingsModalOpen}
-        onClose={() => setSettingsModalOpen(false)}
-        onApply={handleSettingsApply}
-        initialShowRestrictions={showRestrictions}
-        initialVisibleHotels={visibleHotels}
       />
     </div>
   );

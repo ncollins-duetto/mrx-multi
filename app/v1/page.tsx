@@ -68,13 +68,16 @@ export default function V1Page() {
   // Table display settings — lifted so both table and modals share them
   const [showRestrictions, setShowRestrictions] = useState(false);
   const [visibleHotels, setVisibleHotels] = useState<string[]>(HOTEL_NAMES.slice(0, 10));
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(["committedOcc", "demandOcc", "competitorAvg"]);
 
   function handleSettingsApply(
     nextShowRestrictions: boolean,
-    nextVisibleHotels: string[]
+    nextVisibleHotels: string[],
+    nextVisibleColumns: string[]
   ) {
     setShowRestrictions(nextShowRestrictions);
     setVisibleHotels(nextVisibleHotels);
+    setVisibleColumns(nextVisibleColumns);
     setSettingsModalOpen(false);
   }
 
@@ -89,13 +92,12 @@ export default function V1Page() {
       for (const dayIdx of dayIndices) {
         const key = `${hotelId}:${dayIdx}`;
         if (type === "Clear") {
-          // Determine current effective restriction (dirty override → seed → None)
-          const effective = updates.get(key) ?? SEED_MAP.get(hotelId)?.[dayIdx] ?? { type: "None" };
-          if (effective.type !== "None") {
-            // Something real exists — mark as pending clear
+          const seed = SEED_MAP.get(hotelId)?.[dayIdx] ?? { type: "None" };
+          if (seed.type !== "None") {
+            // Published restriction exists — mark as pending clear (strikethrough)
             updates.set(key, { type: "None", isDirty: true });
           } else {
-            // Already empty — remove any dirty entry so it stays clean
+            // No published restriction — discard any unpublished addition silently
             updates.delete(key);
           }
         } else {
@@ -130,10 +132,18 @@ export default function V1Page() {
           style={{ borderColor: "#dde1e2" }}
         >
           <h1 className="text-[18px] font-bold" style={{ color: "#0e2124" }}>
-            Europe
+            Manage Rates
           </h1>
 
           <div className="flex items-center gap-3">
+            {/* Review & Publish */}
+            <button
+              className="flex items-center gap-1.5 px-4 h-8 rounded text-[13px] font-semibold transition-colors hover:opacity-90"
+              style={{ backgroundColor: "#006461", color: "#ffffff" }}
+            >
+              Review &amp; Publish
+            </button>
+
             {/* Table settings */}
             <button
               onClick={() => setSettingsModalOpen(true)}
@@ -154,15 +164,6 @@ export default function V1Page() {
               Bulk restrictions
             </button>
 
-            {/* Review */}
-            <button
-              className="flex items-center gap-1.5 px-3 h-8 border rounded text-[13px] transition-colors hover:bg-gray-50"
-              style={{ borderColor: "#dde1e2", color: "#4f5b60" }}
-            >
-              <EyeIcon />
-              Review
-            </button>
-
             {/* Date range */}
             <button
               className="flex items-center gap-2 px-3 h-8 border rounded text-[13px] transition-colors hover:bg-gray-50"
@@ -170,14 +171,6 @@ export default function V1Page() {
             >
               5/7/2026 – 5/13/2026
               <CalendarIcon />
-            </button>
-
-            {/* Publish — always visible */}
-            <button
-              className="flex items-center gap-1.5 px-4 h-8 rounded text-[13px] font-semibold transition-colors hover:opacity-90"
-              style={{ backgroundColor: "#006461", color: "#ffffff" }}
-            >
-              Publish
             </button>
           </div>
         </div>
@@ -207,6 +200,7 @@ export default function V1Page() {
             dirtyRestrictions={dirtyRestrictions}
             showRestrictions={showRestrictions}
             visibleHotels={visibleHotels}
+            visibleColumns={visibleColumns}
           />
         </div>
       </main>
@@ -224,6 +218,7 @@ export default function V1Page() {
         onApply={handleSettingsApply}
         initialShowRestrictions={showRestrictions}
         initialVisibleHotels={visibleHotels}
+        initialVisibleColumns={visibleColumns}
       />
     </div>
   );

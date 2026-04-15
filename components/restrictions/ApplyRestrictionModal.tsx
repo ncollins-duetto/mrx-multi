@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DAYS, RestrictionType } from "@/lib/restrictionData";
 
 type Props = {
@@ -32,15 +32,20 @@ export default function ApplyRestrictionModal({
   onConfirm,
   availableHotels,
 }: Props) {
-  const [selectedHotels, setSelectedHotels] = useState<Set<string>>(
-    new Set(availableHotels)
-  );
-  const [selectedDays, setSelectedDays] = useState<Set<number>>(
-    new Set([0, 1, 2, 3, 4, 5, 6])
-  );
+  const [selectedHotels, setSelectedHotels] = useState<Set<string>>(() => new Set(availableHotels));
+  const [selectedDays, setSelectedDays] = useState<Set<number>>(() => new Set(DAYS.map((_, i) => i)));
   const [selectedType, setSelectedType] = useState<RestrictionType | "Clear" | null>(null);
   const [value, setValue] = useState<string>("2");
-  const [warningOpen, setWarningOpen] = useState(false);
+
+  // Reset to defaults each time the modal opens
+  useEffect(() => {
+    if (open) {
+      setSelectedHotels(new Set(availableHotels));
+      setSelectedDays(new Set(DAYS.map((_, i) => i)));
+      setSelectedType(null);
+      setValue("2");
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!open) return null;
 
@@ -106,39 +111,15 @@ export default function ApplyRestrictionModal({
 
         {/* Warning banner */}
         <div className="px-6 pt-4">
-          <button
-            className="w-full flex items-center justify-between px-4 py-3 rounded border text-left"
-            style={{ borderColor: "#c97c1a", backgroundColor: "#fffbf2" }}
-            onClick={() => setWarningOpen((v) => !v)}
+          <div
+            className="flex items-start gap-2.5 px-4 py-3 rounded border text-[13px]"
+            style={{ borderColor: "#c97c1a", backgroundColor: "#fffbf2", color: "#7a4a08" }}
           >
-            <span className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#c97c1a">
-                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-              </svg>
-              <span className="text-[13px] font-medium" style={{ color: "#7a4a08" }}>
-                Important to consider before clicking "Apply":
-              </span>
-            </span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="#c97c1a"
-              style={{ transform: warningOpen ? "rotate(180deg)" : undefined, transition: "transform 0.15s" }}
-            >
-              <path d="M7 10l5 5 5-5H7z" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#c97c1a" style={{ flexShrink: 0, marginTop: "1px" }}>
+              <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
             </svg>
-          </button>
-          {warningOpen && (
-            <div
-              className="border border-t-0 rounded-b px-4 py-3 text-[13px]"
-              style={{ borderColor: "#c97c1a", color: "#7a4a08", backgroundColor: "#fffbf2" }}
-            >
-              Applying restrictions will overwrite any existing restrictions for the selected
-              properties and dates. This action cannot be undone automatically — review the
-              pending changes in the table before publishing.
-            </div>
-          )}
+            Restrictions will only apply to the properties selected below and will override existing property-level restrictions.
+          </div>
         </div>
 
         {/* Body — two columns */}
@@ -269,9 +250,6 @@ export default function ApplyRestrictionModal({
                   </label>
                 );
               })}
-
-              {/* Separator */}
-              <div className="my-1" style={{ borderTop: "1px solid #dde1e2" }} />
 
               {/* Clear all restrictions — mutually exclusive with above */}
               <label

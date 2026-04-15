@@ -304,10 +304,10 @@ const SUBHEADER_BG    = "#e4dff5";
 const HOTEL_COL_BG    = "#ece8f8";
 const BORDER_THIN     = "#dde1e2";
 const BORDER_THICK    = "#dde1e2";
-const RATE_COL_WIDTH     = "175px";
-const OVERRIDE_COL_WIDTH = "120px";
-const RESTR_COL_WIDTH    = "100px";
-const EXP_COL_WIDTH      = "155px";
+const RATE_COL_WIDTH     = "124px";
+const OVERRIDE_COL_WIDTH = "124px";
+const RESTR_COL_WIDTH    = "124px";
+const EXP_COL_WIDTH      = "124px";
 const PRIMARY_TEXT    = "#1a2533";
 const CELL_TEXT       = "#1a2533";
 const SUBHEADER_TEXT  = "#4f5b60";
@@ -395,11 +395,19 @@ function SmallChevronDown() {
   );
 }
 
+// ── Expanded column definitions ───────────────────────────────────────────────
+const ALL_EXPANDED_COLS = [
+  { key: "committedOcc",  label: "Committed Occ." },
+  { key: "demandOcc",     label: "Demand Occ." },
+  { key: "competitorAvg", label: "Competitor Avg." },
+];
+
 // ── Props ─────────────────────────────────────────────────────────────────────
 type Props = {
   dirtyRestrictions: Map<string, DayRestriction>;
   showRestrictions?: boolean;
   visibleHotels?: string[];
+  visibleColumns?: string[];
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -407,6 +415,7 @@ export default function RatesTableWithRestrictions({
   dirtyRestrictions,
   showRestrictions = true,
   visibleHotels,
+  visibleColumns = ["committedOcc", "demandOcc", "competitorAvg"],
 }: Props) {
   const [selectedHotel, setSelectedHotel] = useState<string | null>(null);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
@@ -480,10 +489,13 @@ export default function RatesTableWithRestrictions({
               const expanded = expandedDays.has(day);
               const isLast = di === DAYS.length - 1;
               const dayBg = di % 2 === 0 ? DATE_HEADER_BG : SUBHEADER_BG;
+              const visExpCols = ALL_EXPANDED_COLS.filter((c) => visibleColumns.includes(c.key));
+              const expColCount = expanded ? visExpCols.length : 0;
+              const baseColCount = 3 + (showRestrictions ? 1 : 0);
               return (
                 <th
                   key={day}
-                  colSpan={expanded ? (showRestrictions ? 7 : 6) : (showRestrictions ? 4 : 3)}
+                  colSpan={baseColCount + expColCount}
                   className="text-center px-2 py-1.5 font-normal border-b text-[12px]"
                   style={{
                     backgroundColor: dayBg,
@@ -513,6 +525,8 @@ export default function RatesTableWithRestrictions({
                 ? { borderRight: `1px solid ${BORDER_THIN}` }
                 : thickBorder();
               const dayBg = di % 2 === 0 ? DATE_HEADER_BG : SUBHEADER_BG;
+              const visExpCols2 = ALL_EXPANDED_COLS.filter((c) => visibleColumns.includes(c.key));
+              const hasExpCols = expanded && visExpCols2.length > 0;
               return (
                 <Fragment key={day}>
                   {/* Current */}
@@ -523,6 +537,7 @@ export default function RatesTableWithRestrictions({
                       borderRight: `1px solid ${BORDER_THIN}`,
                       color: SUBHEADER_TEXT,
                       width: RATE_COL_WIDTH,
+                      minWidth: RATE_COL_WIDTH,
                     }}
                   >
                     Current
@@ -534,6 +549,7 @@ export default function RatesTableWithRestrictions({
                       backgroundColor: dayBg,
                       color: SUBHEADER_TEXT,
                       width: RATE_COL_WIDTH,
+                      minWidth: RATE_COL_WIDTH,
                       borderRight: `1px solid ${BORDER_THIN}`,
                     }}
                   >
@@ -546,7 +562,8 @@ export default function RatesTableWithRestrictions({
                       backgroundColor: dayBg,
                       color: SUBHEADER_TEXT,
                       width: OVERRIDE_COL_WIDTH,
-                      ...(!showRestrictions && !expanded ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
+                      minWidth: OVERRIDE_COL_WIDTH,
+                      ...(!showRestrictions && !hasExpCols ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
                     }}
                   >
                     Override
@@ -559,36 +576,32 @@ export default function RatesTableWithRestrictions({
                         backgroundColor: dayBg,
                         color: SUBHEADER_TEXT,
                         width: RESTR_COL_WIDTH,
-                        ...(expanded
-                          ? { borderRight: `1px solid ${BORDER_THIN}` }
-                          : sectionEndBorder),
+                        minWidth: RESTR_COL_WIDTH,
+                        ...(!hasExpCols ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
                       }}
                     >
                       Restrictions
                     </th>
                   )}
-                  {expanded && (
-                    <>
+                  {/* Expanded columns — only those in visibleColumns */}
+                  {hasExpCols && visExpCols2.map((col, idx) => {
+                    const isLastExpCol = idx === visExpCols2.length - 1;
+                    return (
                       <th
+                        key={col.key}
                         className="text-right px-3 py-1 font-normal border-b text-[12px]"
-                        style={{ backgroundColor: dayBg, borderRight: `1px solid ${BORDER_THIN}`, color: SUBHEADER_TEXT, width: EXP_COL_WIDTH }}
+                        style={{
+                          backgroundColor: dayBg,
+                          color: SUBHEADER_TEXT,
+                          width: EXP_COL_WIDTH,
+                          minWidth: EXP_COL_WIDTH,
+                          ...(isLastExpCol ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
+                        }}
                       >
-                        Committed Occ.
+                        {col.label}
                       </th>
-                      <th
-                        className="text-right px-3 py-1 font-normal border-b text-[12px]"
-                        style={{ backgroundColor: dayBg, borderRight: `1px solid ${BORDER_THIN}`, color: SUBHEADER_TEXT, width: EXP_COL_WIDTH }}
-                      >
-                        Demand Occ.
-                      </th>
-                      <th
-                        className="text-right px-3 py-1 font-normal border-b text-[12px]"
-                        style={{ backgroundColor: dayBg, color: SUBHEADER_TEXT, width: EXP_COL_WIDTH, ...sectionEndBorder }}
-                      >
-                        Competitor Avg.
-                      </th>
-                    </>
-                  )}
+                    );
+                  })}
                 </Fragment>
               );
             })}
@@ -636,6 +649,18 @@ export default function RatesTableWithRestrictions({
                     ? { borderRight: `1px solid ${BORDER_THIN}` }
                     : thickBorder();
                   const restriction = getRestriction(hotel.name, i);
+                  const seedRestriction = restrictionMap.get(hotel.name)?.[i];
+                  const originalRestriction =
+                    restriction.type === "None" && restriction.isDirty
+                      ? seedRestriction
+                      : undefined;
+                  const visExpColsBody = ALL_EXPANDED_COLS.filter((c) => visibleColumns.includes(c.key));
+                  const hasExpColsBody = expanded && visExpColsBody.length > 0;
+                  const cellValues: Record<string, string> = {
+                    committedOcc: `${rate.committedOccupancy}%`,
+                    demandOcc: rate.demandOccupancy,
+                    competitorAvg: rate.competitorAverage,
+                  };
 
                   return (
                     <Fragment key={i}>
@@ -647,6 +672,7 @@ export default function RatesTableWithRestrictions({
                           borderRight: `1px solid ${BORDER_THIN}`,
                           color: CELL_TEXT,
                           width: RATE_COL_WIDTH,
+                          minWidth: RATE_COL_WIDTH,
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -670,6 +696,7 @@ export default function RatesTableWithRestrictions({
                               className="px-3 py-2 border-b"
                               style={{
                                 width: RATE_COL_WIDTH,
+                                minWidth: RATE_COL_WIDTH,
                                 whiteSpace: "nowrap",
                                 borderBottom: `1px solid ${BORDER_THIN}`,
                                 ...recRightBorder,
@@ -696,6 +723,7 @@ export default function RatesTableWithRestrictions({
                             style={{
                               color: CELL_TEXT,
                               width: RATE_COL_WIDTH,
+                              minWidth: RATE_COL_WIDTH,
                               whiteSpace: "nowrap",
                               borderBottom: `1px solid ${BORDER_THIN}`,
                               ...recRightBorder,
@@ -717,15 +745,16 @@ export default function RatesTableWithRestrictions({
                         className="px-3 py-2 border-b"
                         style={{
                           width: OVERRIDE_COL_WIDTH,
+                          minWidth: OVERRIDE_COL_WIDTH,
                           whiteSpace: "nowrap",
                           borderBottom: `1px solid ${BORDER_THIN}`,
-                          ...(!showRestrictions && !expanded ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
+                          ...(!showRestrictions && !hasExpColsBody ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <input
                           type="text"
-                          className="border rounded px-2 py-1 text-[13px] text-right w-full"
+                          className="border rounded px-1 py-1 text-[13px] text-right w-full"
                           style={{ borderColor: BORDER_THIN, color: CELL_TEXT }}
                           placeholder=""
                         />
@@ -738,46 +767,36 @@ export default function RatesTableWithRestrictions({
                           style={{
                             color: CELL_TEXT,
                             width: RESTR_COL_WIDTH,
+                            minWidth: RESTR_COL_WIDTH,
                             borderBottom: `1px solid ${BORDER_THIN}`,
                             backgroundColor: restriction.isDirty ? "#daf0ec" : undefined,
-                            ...(expanded
-                              ? { borderRight: `1px solid ${BORDER_THIN}` }
-                              : sectionEndBorder),
+                            ...(!hasExpColsBody ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
                           }}
                         >
-                          <RestrictionCell restriction={restriction} />
+                          <RestrictionCell restriction={restriction} originalRestriction={originalRestriction} />
                         </td>
                       )}
 
-                      {/* Expanded columns */}
-                      {expanded && (
-                        <>
+                      {/* Expanded columns — only those in visibleColumns */}
+                      {hasExpColsBody && visExpColsBody.map((col, idx) => {
+                        const isLastExpCol = idx === visExpColsBody.length - 1;
+                        return (
                           <td
-                            className="px-3 py-2 border-b text-right"
-                            style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: EXP_COL_WIDTH, whiteSpace: "nowrap" }}
-                          >
-                            {rate.committedOccupancy}%
-                          </td>
-                          <td
-                            className="px-3 py-2 border-b text-right"
-                            style={{ borderColor: BORDER_THIN, color: CELL_TEXT, width: EXP_COL_WIDTH, whiteSpace: "nowrap" }}
-                          >
-                            {rate.demandOccupancy}
-                          </td>
-                          <td
+                            key={col.key}
                             className="px-3 py-2 border-b text-right"
                             style={{
                               color: CELL_TEXT,
                               width: EXP_COL_WIDTH,
+                              minWidth: EXP_COL_WIDTH,
                               whiteSpace: "nowrap",
                               borderBottom: `1px solid ${BORDER_THIN}`,
-                              ...sectionEndBorder,
+                              ...(isLastExpCol ? sectionEndBorder : { borderRight: `1px solid ${BORDER_THIN}` }),
                             }}
                           >
-                            {rate.competitorAverage}
+                            {cellValues[col.key]}
                           </td>
-                        </>
-                      )}
+                        );
+                      })}
                     </Fragment>
                   );
                 })}
